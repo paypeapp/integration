@@ -1,0 +1,29 @@
+<?php
+$syncConfig = array(
+    'partnerName' => '', // Your business name
+
+    'webservice' => array(
+        'type' => '', // Type of your webservice implemented in wsInterfaces
+        'location' => '', // WS specific options like location, username, password or auth keys
+        'user' => '',
+        'pwd' => ''
+    ),
+
+    'api' => array(
+        'location' => 'https://api.paype.com',
+        'key' => '', // You will generate the key and the secret in business management web
+        'secret' => ''
+    ),
+
+    // list of syncing, you ma only chose to pull customers created from Paype
+    'sync' => array(
+        'customersPush',
+        'customersPull'
+    ),
+
+    'auth' => array(
+        'ipWhitelist' => array(
+            '127.0.0.1'
+        )
+    )
+);
