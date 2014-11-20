@@ -1,10 +1,10 @@
-Paype integration examples
---------------------------
+Paype integration
+-----------------
 This is Paype public repository with examples for synchronizing data between Your and Paype systems.
 
-Paype offers its partners public REST API at api.paype.com, documented at https://dev.paype.me/api-docs.html. The script takes advantage of this API-s methods to allow data synchronization.
+Paype offers its partners public REST API at api.paype.com, documented at https://dev.paype.me/api-docs.html. The scripts here take advantage of this API-s methods to allow data synchronization.
 
-Available methods include pushing customers from your to Paype systems or pulling customers added via Paype to your databases.
+Available methods include pushing customers from Your to Paype systems or pulling customers added via Paype to Your databases.
 
 Usage
 -----
@@ -12,13 +12,13 @@ The script can run as command-line tool or as a website served over your preferr
 
 Recommended to call via time-based job scheduling services such as CRON.
 
-Script has 2 parameters, verbose and force. Verbose will help you see what the script does helping you identify any possible problems. Force will make the script to synchronize all data, not using the default sync flags kept in Paype systems.
+Script has 2 parameters, verbose and force. Verbose will help you see scripts progress, helping you identify any possible problems. Force will make the script synchronize all data and skip using the default sync flags kept in Paype systems.
 
 CLI example:
-        php index.php verbose=1 force=1
+> php index.php verbose=1 force=1
 
 Web example:
-        http://<YOUR_LOCAL_OR_PUBLIC_ADDRESS>/<SCRIPT_LOCATION>/index.php?verbose=1&force=1
+> http://< YOUR LOCAL OR PUBLIC ADDRESS >/< SCRIPT LOCATION >/index.php?verbose=1&force=1
 
 Integration steps
 -----------------
