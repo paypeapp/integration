@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Making calls to Paype public API, documented at https://business.paype.me/api-docs.html
+ * Making calls to Paype public API
  */
 class PaypePublicApi
 {
@@ -17,8 +17,8 @@ class PaypePublicApi
         if(empty($config['api']['location']) || empty($config['api']['key']) || empty($config['api']['secret']))
         {
             $errMsg = 'api credentials not set in config';
-            $this->log($errMsg, true);
-            die('Fail');
+            paypeLog($errMsg, true);
+            die('');
         }
 
         $this->location =  $config['api']['location'];
@@ -36,7 +36,15 @@ class PaypePublicApi
     public function getCustomers($createdWithin)
     {
         $this->endpoint = 'customers';
-        return $this->curl(array('created_within' => $createdWithin));
+        $customers = $this->curl(array('created_within' => $createdWithin));
+
+        if(!empty($customers) && !is_array($customers))
+        {
+            // 1 customer returned, make into array
+            $customers = array($customers);
+        }
+
+        return $customers;
     }
 
     public function postCustomer($customer)
@@ -51,6 +59,7 @@ class PaypePublicApi
         return $this->curl();
     }
 
+    // build call url with parameters, key, nonce and auth signature
     private function getUrl($queryParams = null)
     {
         $url = $this->location . '/' . $this->endpoint . '?';
@@ -74,6 +83,7 @@ class PaypePublicApi
         return $url;
     }
 
+    // call Paype API and return the response
     private function curl($params = null, $method = 'GET')
     {
         $headers = array(
@@ -84,6 +94,7 @@ class PaypePublicApi
         );
 
         $rest = curl_init();
+
         if($method == 'POST')
         {
             curl_setopt($rest,CURLOPT_URL, $this->getUrl());
@@ -100,23 +111,14 @@ class PaypePublicApi
         $response = curl_exec($rest);
 
         curl_close($rest);
-        $this->log('rest-api-response ' . $method . ' ' . json_encode($params) . ': ' . json_encode($response));
+        paypeLog('rest-api-response ' . $method . ' ' . json_encode($params) . ': ' . json_encode($response));
 
         if(!empty($response->error))
         {
             throw new Exception($response->error->message);
         }
 
-        return $response;
-    }
-
-    private function log($msg, $alwaysLog = false)
-    {
-        if(!empty($_GET['verbose']) || $alwaysLog)
-        {
-            error_log('[paype-sync] ' . substr($msg, 0, 100));
-            echo $msg . '<br>';
-        }
+        return json_decode($response);
     }
 
     public function setEndpoint($e)

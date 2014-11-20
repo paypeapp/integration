@@ -1,65 +1,29 @@
 <?php
-require_once('config.php');
-require_once('paypePublicApi.php');
-require_once('partnerCommunicator.php');
+// is the script run as command-line tool
+define('ISCLI', PHP_SAPI === 'cli');
+// disable running time limit
+set_time_limit(0);
 
-Class SyncHandler
+if(ISCLI)
 {
-    public function __construct($config)
+    // add command-line parameters to GET parameters array
+    parse_str(implode('&', array_slice($argv, 1)), $_GET);
+}
+
+function paypeLog($msg, $alwaysLog = false)
+{
+    if(!empty($_GET['verbose']) || $alwaysLog)
     {
-        $this->log('start');
-        $t1 = time();
-        set_time_limit(0);
-
-        if(!$this->auth($config['auth']))
+        error_log('[paype-sync] ' . substr($msg, 0, 1000));
+        if(!ISCLI)
         {
-            $this->log('auth failed', true);
-            die('Access denied. Try harder, or do not try at all!');
-        }
-
-        $this->sync($config);
-        $this->log('finished in ' . time() - $t1 . ' seconds');
-    }
-
-    private function sync($config)
-    {
-        if(!empty($config['webservice']['type']) && file_exists('wsInterfaces/' . $config['webservice']['type'].'.php'))
-        {
-            require_once('wsInterfaces/' . $config['webservice']['type'] . '.php');
-
-            $wsClassName = ucfirst($config['webservice']['type']);
-
-            $wsFactory = new $wsClassName($config['webservice']);
-            $ws = $wsFactory->getClient();
-
-            $partnerCommunication = new PartnerCommunicator($ws, new PaypePublicApi($config), $config);
-            foreach($config['sync'] as $func)
-            {
-                $partnerCommunication->$func();
-            }
-        }
-        else
-        {
-            $this->log('failed to load webservice: ' . $config['webservice']['type'], true);
-        }
-    }
-
-    private function auth($auth)
-    {
-        $ip = $_SERVER['REMOTE_ADDR'];
-        $this->log('connecting from ip:'.$ip);
-
-        return !empty($auth['ipWhitelist']) && is_array($auth['ipWhitelist']) && in_array($ip, $auth['ipWhitelist']);
-    }
-
-    private function log($msg, $alwaysLog = false)
-    {
-        if(!empty($_GET['verbose']) || $alwaysLog)
-        {
-            error_log('[paype-sync] ' . substr($msg, 0, 100));
             echo $msg . '<br>';
         }
     }
 }
 
-new SyncHandler($syncConfig);
+require_once('paypePublicApi.php');
+require_once('syncHandler.php');
+require_once('wsInterfaces/wsInterface.php');
+
+new SyncHandler(require('config.php'));
