@@ -148,7 +148,7 @@ class NTLMSoapClient extends SoapClient {
     }
 }
 
-class Navision
+class Navision implements WsInterface
 {
     private $client;
 
@@ -162,8 +162,68 @@ class Navision
         $this->client = new NTLMSoapClient($wsConfig['location']);
     }
 
-    public function getClient()
+    public function getCustomers($lastSyncCustomerId)
     {
-        return $this->client;
+        $returnCustomers = array();
+
+        $read = array('filter' => null, 'bookmarkKey' => null, 'setSize' => null);
+
+        try
+        {
+            $customers = $this->client->ReadMultiple($read);
+        }
+        catch(Exception $e)
+        {
+            paypeLog('customersPush customer read fail: ' . $e->getMessage(), true);
+        }
+
+        $customers = $customers->ReadMultiple_Result->RegularCustomer;
+        if(!is_array($customers))
+        {
+            $customers = array($customers);
+        }
+
+        // if sync id is not presented try to add all customers
+        $addCustomer = empty($lastSyncCustomerId);
+
+        foreach($customers as $customer)
+        {
+            if($addCustomer && !empty($customer->No))
+            {
+                $returnCustomers[] = array(
+                    'first_name' => $customer->First_Name,
+                    'last_name' => $customer->Last_Name,
+                    'email' => $customer->E_Mail,
+                    'customer_id' => $customer->No
+                );
+            }
+            else if($lastSyncCustomerId == $customer->No)
+            {
+                $addCustomer = true;
+            }
+        }
+
+        return $returnCustomers;
+    }
+
+    public function postCustomers($customers)
+    {
+        foreach($customers as $c)
+        {
+            $create = array();
+            $create['RegularCustomer']['E_Mail'] = $c->email;
+            $create['RegularCustomer']['First_Name'] = $c->first_name;
+            $create['RegularCustomer']['Last_Name'] = $c->last_name;
+            $create['RegularCustomer']['Paype_ID'] = $c->customer_id;
+
+            try
+            {
+                $this->client->Create($create);
+            }
+            catch(Exception $e)
+            {
+                paypeLog('customerPull create fail: ' . $e->getMessage(), true);
+            }
+        }
     }
 }
