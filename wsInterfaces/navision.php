@@ -174,7 +174,7 @@ class Navision implements WsInterface
         }
         catch(Exception $e)
         {
-            paypeLog('customersPush customer read fail: ' . $e->getMessage(), true);
+            paypeLog('navision customersPush customer read fail: ' . $e->getMessage(), true);
         }
 
         $customers = $customers->ReadMultiple_Result->RegularCustomer;
@@ -222,7 +222,7 @@ class Navision implements WsInterface
             }
             catch(Exception $e)
             {
-                paypeLog('customerPull create fail: ' . $e->getMessage(), true);
+                paypeLog('navision customerPull create fail: ' . $e->getMessage(), true);
             }
         }
     }
