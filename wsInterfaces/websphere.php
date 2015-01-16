@@ -84,10 +84,10 @@ class Websphere implements WsInterface
 
 				paypeLog('websphere customerPull create res: ' . json_encode($res));
 
-				// if customer post was a success and we got new card number we can send it back to API
+				// if customer post was a success and we got new card number we can send it back to API and activate the customer card
 				if($updateCardNoInApi && strlen($res->return->cardNo) == 16)
 				{
-					$this->api->updateCustomer($c->token, array('customer_id' => $res->return->cardNo));
+					$this->api->updateCustomer($c->token, array('customer_id' => $res->return->cardNo, 'active' => true));
 				}
 			}
 			catch(Exception $e)
