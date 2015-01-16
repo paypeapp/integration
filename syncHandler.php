@@ -31,7 +31,7 @@ Class SyncHandler
             $wsClassName = ucfirst($config['webservice']['type']);
 
             $this->api = new PaypePublicApi($config);
-            $this->wsClient = new $wsClassName($config['webservice']);
+            $this->wsClient = new $wsClassName($config['webservice'], $this->api);
 
             if(!$this->wsClient instanceof WsInterface)
             {

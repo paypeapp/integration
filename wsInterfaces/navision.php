@@ -152,7 +152,7 @@ class Navision implements WsInterface
 {
     private $client;
 
-    public function __construct($wsConfig)
+    public function __construct($wsConfig, $paypeApi)
     {
         stream_wrapper_unregister('http');
         stream_wrapper_register('http', 'NTLMStream') or die("Failed to register protocol");

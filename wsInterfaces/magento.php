@@ -3,7 +3,7 @@ class Magento implements WsInterface
 {
 	private $client, $session;
 
-	public function __construct($wsConfig)
+	public function __construct($wsConfig, $paypeApi)
 	{
 		$this->client = new SoapClient(
 			$wsConfig['location'],

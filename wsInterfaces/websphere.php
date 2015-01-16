@@ -27,9 +27,9 @@ class CustomerCardInfo
 
 class Websphere implements WsInterface
 {
-	private $client;
+	private $client, $api;
 
-	public function __construct($wsConfig)
+	public function __construct($wsConfig, $paypeApi)
 	{
 		$this->client = new SoapClient(
 			$wsConfig['location'],
@@ -42,6 +42,7 @@ class Websphere implements WsInterface
 				'cache_wsdl'		=>	'WSDL_CACHE_NONE'
 			)
 		);
+		$this->api = $paypeApi;
 	}
 
 	public function getCustomers($lastSyncCustomerId)
@@ -52,15 +53,24 @@ class Websphere implements WsInterface
 
 	public function postCustomers($customers)
 	{
+
 		foreach($customers as $c)
 		{
+			$updateCardNoInApi = false;
+
 			$cardInfo = new CustomerCardInfo();
 			$cardInfo->email = $c->email;
 			$cardInfo->firstName = $c->first_name;
 			$cardInfo->lastName = $c->last_name;
-			$cardInfo->idCode = $c->customer_id;
-			// TODO: check if customer_id is personal_code or Webspehere cardNo
-			// $cardInfo->cardNo = $c->customer_id;
+			if(strlen($c->customer_id) == 16)
+			{
+				$cardInfo->cardNo = $c->customer_id;
+			}
+			else
+			{
+				$updateCardNoInApi = true;
+				$cardInfo->idCode = $c->customer_id;
+			}
 			$cardInfo->phone = $c->phone_international;
 			$cardInfo->birthDate = !empty($c->birthday) ? date('Y-m-d', strtotime($c->birthday)) : null;
 			$cardInfo->agreedToTerms = true;
@@ -71,7 +81,14 @@ class Websphere implements WsInterface
 			try
 			{
 				$res = $this->client->__soapCall('postCustomerCardInfo', array($post));
-				paypeLog('magento customerPull create res: ' . json_encode($res));
+
+				paypeLog('websphere customerPull create res: ' . json_encode($res));
+
+				// if customer post was a success and we got new card number we can send it back to API
+				if($updateCardNoInApi && strlen($res->return->cardNo) == 16)
+				{
+					$this->api->updateCustomer($c->token, array('customer_id' => $res->return->cardNo));
+				}
 			}
 			catch(Exception $e)
 			{

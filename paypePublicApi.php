@@ -53,6 +53,12 @@ class PaypePublicApi
         return $this->curl($customer, 'POST');
     }
 
+    public function updateCustomer($uuid, $customerUpdateFields)
+    {
+        $this->endpoint = 'customers/'. $uuid;
+        return $this->curl($customerUpdateFields, 'PUT');
+    }
+
     public function getSync()
     {
         $this->endpoint = 'sync';
@@ -95,19 +101,21 @@ class PaypePublicApi
 
         $rest = curl_init();
 
-        if($method == 'POST')
+        if($method == 'POST' || $method == 'PUT')
         {
-            curl_setopt($rest,CURLOPT_URL, $this->getUrl());
-            curl_setopt($rest,CURLOPT_POST, 1);
-            curl_setopt($rest,CURLOPT_POSTFIELDS, json_encode($params));
+            curl_setopt($rest, CURLOPT_URL, $this->getUrl());
+            curl_setopt($rest, CURLOPT_POST, 1);
+            curl_setopt($rest, CURLOPT_POSTFIELDS, json_encode($params));
+            curl_setopt($rest, CURLOPT_POST, 1);
+            curl_setopt($rest, CURLOPT_CUSTOMREQUEST, $method);
         }
         else
         {
-            curl_setopt($rest,CURLOPT_URL, $this->getUrl($params));
+            curl_setopt($rest, CURLOPT_URL, $this->getUrl($params));
         }
-        curl_setopt($rest,CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($rest,CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($rest,CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($rest, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($rest, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($rest, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($rest);
 
         curl_close($rest);
