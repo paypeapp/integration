@@ -44,7 +44,7 @@ Class SyncHandler
                 try
                 {
                     // unless force-d to sync all, get synchronization flags from Paype
-                    $this->sync = json_decode($this->api->getSync());
+                    $this->sync = $this->api->getSync();
                 }
                 catch(Exception $e)
                 {

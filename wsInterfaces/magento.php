@@ -26,12 +26,16 @@ class Magento implements WsInterface
 		$customers = $returnCustomers = array();
 
 		$customerMagentoId = 1;
-		/* TODO: this part here would find the Magento client_id of last synced customer, but we have no search at this point
-		if(!empty($lastSyncCustomerId))
+
+		//this part here would find the Magento client_id of last synced customer
+		if(!empty($lastSyncCustomerId) && false) //TODO
 		{
 			try
 			{
-				$lastSyncedCustomer = $this->client->call($this->session, 'customer.info', array(array('customer_code' => $lastSyncCustomerId)));
+				// TODO: This does not work, no customer_code filter:
+				//$lastSyncedCustomer = $this->client->call($this->session, 'customer.list', array(array('customer_code' => array('eq' => $lastSyncCustomerId))));
+				// TODO: This would work, but sync id has to be communicated differently:
+				//$lastSyncedCustomer = $this->client->call($this->session, 'customer.list', array(array('customer_id' => array('eq' => 1000))));
 				paypeLog('lastSynced customer '.json_encode($lastSyncedCustomer));
 
 				if(!empty($lastSyncedCustomer['client_id']))
@@ -44,9 +48,8 @@ class Magento implements WsInterface
 				paypeLog('magento last synced customer read fail: ' . $e->getMessage(), true); // most probably not found, carry on starting to get from first
 			}
 		}
-		*/
 
-		while(count($customers) < 1000) // TODO: how many to query at once TBD
+		while(count($customers) < 5) // TODO: how many to query at once TBD
 		{
 			try
 			{
@@ -60,7 +63,7 @@ class Magento implements WsInterface
 			}
 		}
 
-		// loop for customer data formating
+		// loop for customer data formatting
 		foreach($customers as $customer)
 		{
 			if(!empty($customer['client_code']))
