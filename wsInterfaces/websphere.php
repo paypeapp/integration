@@ -59,9 +59,10 @@ class Websphere implements WsInterface
 			$cardInfo->firstName = $c->first_name;
 			$cardInfo->lastName = $c->last_name;
 			$cardInfo->idCode = $c->customer_id;
-			$cardInfo->cardNo = $c->customer_id;
+			// TODO: check if customer_id is personal_code or Webspehere cardNo
+			// $cardInfo->cardNo = $c->customer_id;
 			$cardInfo->phone = $c->phone_international;
-			$cardInfo->birthDate = !empty($c->birthday) ? date('"Y-m-d', strtotime($c->birthday)).'T00:00:00' : null;
+			$cardInfo->birthDate = !empty($c->birthday) ? date('Y-m-d', strtotime($c->birthday)) : null;
 			$cardInfo->agreedToTerms = true;
 
 			$post = new PostCustomerCardInfo();
