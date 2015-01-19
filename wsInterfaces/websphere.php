@@ -5,8 +5,7 @@ class PostCustomerCardInfo
 	public $arg0; // CustomerCardInfo
 }
 
-class CustomerCardInfo
-{
+class CustomerCardInfo {
 	/** @var String */
 	public $cardNo; // String
 	/** @var String */
@@ -21,6 +20,10 @@ class CustomerCardInfo
 	public $email; // String
 	/** @var String */
 	public $phone; // String
+	/** @var Address */
+	public $address; // Address
+	/** @var String */
+	public $language; // String
 	/** @var Boolean */
 	public $agreedToTerms; // Boolean
 }
@@ -62,6 +65,7 @@ class Websphere implements WsInterface
 			$cardInfo->email = $c->email;
 			$cardInfo->firstName = $c->first_name;
 			$cardInfo->lastName = $c->last_name;
+			$cardInfo->language = $c->language;
 			if(strlen($c->customer_id) == 16)
 			{
 				$cardInfo->cardNo = $c->customer_id;
