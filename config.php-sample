@@ -8,7 +8,8 @@ return array(
         'user' => '',
         'pwd' => '',
         'webUsername' => '', // possible extra HTTP auth
-        'webPassword' => ''
+        'webPassword' => '',
+        'emails' => array() // list of emails to send data in case of Email is WS
     ),
 
     'api' => array(
