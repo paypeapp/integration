@@ -6,7 +6,9 @@ return array(
         'type' => '', // Type of your webservice implemented in wsInterfaces
         'location' => '', // WS specific options like location, username, password or auth keys
         'user' => '',
-        'pwd' => ''
+        'pwd' => '',
+        'webUsername' => '', // possible extra HTTP auth
+        'webPassword' => ''
     ),
 
     'api' => array(

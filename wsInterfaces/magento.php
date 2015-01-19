@@ -1,7 +1,7 @@
 <?php
 class Magento implements WsInterface
 {
-	private $client, $session;
+	private $client, $session, $maxCallsPerSession;
 
 	public function __construct($wsConfig, $paypeApi)
 	{
@@ -27,20 +27,17 @@ class Magento implements WsInterface
 
 		$customerMagentoId = 1;
 
-		//this part here would find the Magento client_id of last synced customer
-		if(!empty($lastSyncCustomerId) && false) //TODO
+		if(!empty($lastSyncCustomerId))
 		{
 			try
 			{
-				// TODO: This does not work, no customer_code filter:
-				//$lastSyncedCustomer = $this->client->call($this->session, 'customer.list', array(array('customer_code' => array('eq' => $lastSyncCustomerId))));
-				// TODO: This would work, but sync id has to be communicated differently:
-				//$lastSyncedCustomer = $this->client->call($this->session, 'customer.list', array(array('customer_id' => array('eq' => 1000))));
+				$lastSyncedCustomer = $this->client->call($this->session, 'customer.infobyisikukood', $lastSyncCustomerId);
+
 				paypeLog('lastSynced customer '.json_encode($lastSyncedCustomer));
 
-				if(!empty($lastSyncedCustomer['client_id']))
+				if(!empty($lastSyncedCustomer['customer_id']))
 				{
-					$customerMagentoId = $lastSyncedCustomer['client_id'];
+					$customerMagentoId = $lastSyncedCustomer['customer_id'] + 1; // start the sync from next customer we have yet to add
 				}
 			}
 			catch(Exception $e)
@@ -49,7 +46,7 @@ class Magento implements WsInterface
 			}
 		}
 
-		while(count($customers) < 5) // TODO: how many to query at once TBD
+		while(true) // we could call it by chunks while(count($customers) < 1000)
 		{
 			try
 			{
@@ -112,7 +109,7 @@ class Magento implements WsInterface
 
 			try
 			{
-				$res = $this->client->call($this->session, 'customer.create', array($create));
+				$res = $this->client->call($this->session, 'customer.createorupdateifexist', array($create));
 				paypeLog('magento customerPull create res: ' . json_encode($res));
 			}
 			catch(Exception $e)
