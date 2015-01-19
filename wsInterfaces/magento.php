@@ -97,6 +97,7 @@ class Magento implements WsInterface
 			$create['firstname'] = $c->first_name;
 			$create['lastname'] = $c->last_name;
 			$create['client_code'] = $c->customer_id;
+			$create['website_id'] = 1;
 
 			if(!empty($c->birthday))
 			{
