@@ -2,7 +2,7 @@ Paype integration
 -----------------
 This is Paype public repository with examples for synchronizing data between Your and Paype systems.
 
-Paype offers its partners public REST API at api.paype.com, documented at https://dev.paype.me/api-docs.html. The scripts here take advantage of this API-s methods to allow data synchronization.
+Paype offers its partners public REST API at api.paype.com, documented at https://business.paype.com/api-docs.html. The scripts here take advantage of this API-s methods to allow data synchronization.
 
 Available methods include pushing customers from Your to Paype systems or pulling customers added via Paype to Your databases.
 
