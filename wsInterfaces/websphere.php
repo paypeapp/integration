@@ -59,8 +59,6 @@ class Websphere implements WsInterface
 
 		foreach($customers as $c)
 		{
-			$updateCardNoInApi = false;
-
 			$cardInfo = new CustomerCardInfo();
 			$cardInfo->email = $c->email;
 			$cardInfo->firstName = $c->first_name;
@@ -72,7 +70,6 @@ class Websphere implements WsInterface
 			}
 			else
 			{
-				$updateCardNoInApi = true;
 				$cardInfo->idCode = $c->customer_id;
 			}
 			$cardInfo->phone = $c->phone_international;
@@ -89,7 +86,7 @@ class Websphere implements WsInterface
 				paypeLog('websphere customerPull create res: ' . json_encode($res));
 
 				// if customer post was a success and we got new card number we can send it back to API and activate the customer card
-				if($updateCardNoInApi && strlen($res->return->cardNo) == 16)
+				if(strlen($res->return->cardNo) == 16)
 				{
 					$this->api->updateCustomer($c->token, array('customer_id' => $res->return->cardNo, 'active' => true));
 				}
