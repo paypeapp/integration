@@ -24,9 +24,9 @@ Class SyncHandler
 
     private function sync($config)
     {
-        if(!empty($config['webservice']['type']) && file_exists('wsInterfaces/' . $config['webservice']['type'].'.php'))
+        if(!empty($config['webservice']['type']) && file_exists(dirname(__FILE__) . '/wsInterfaces/' . $config['webservice']['type'].'.php'))
         {
-            require_once('wsInterfaces/' . $config['webservice']['type'] . '.php');
+            require_once(dirname(__FILE__) . '/wsInterfaces/' . $config['webservice']['type'] . '.php');
 
             $wsClassName = ucfirst($config['webservice']['type']);
 
@@ -110,6 +110,7 @@ Class SyncHandler
         catch(Exception $e)
         {
             paypeLog('customersPull customers api get fail: ' . $e->getMessage(), true);
+            $customers = array();
         }
 
         // post customers to your system
@@ -131,5 +132,4 @@ Class SyncHandler
         return !empty($auth['ipWhitelist']) && is_array($auth['ipWhitelist']) && in_array($ip, $auth['ipWhitelist']);
     }
 }
-
 ?>
