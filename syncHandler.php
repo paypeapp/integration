@@ -24,9 +24,9 @@ Class SyncHandler
 
     private function sync($config)
     {
-        if(!empty($config['webservice']['type']) && file_exists(dirname(__FILE__) . '/wsInterfaces/' . $config['webservice']['type'].'.php'))
+        if(!empty($config['webservice']['type']) && file_exists(dirname(__FILE__) . '/wsInterfaces/' . strtolower($config['webservice']['type']) . '.php'))
         {
-            require_once(dirname(__FILE__) . '/wsInterfaces/' . $config['webservice']['type'] . '.php');
+            require_once(dirname(__FILE__) . '/wsInterfaces/' . strtolower($config['webservice']['type']) . '.php');
 
             $wsClassName = ucfirst($config['webservice']['type']);
 
