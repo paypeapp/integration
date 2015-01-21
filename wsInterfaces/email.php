@@ -49,9 +49,13 @@ class Email implements WsInterface
 
 		$email .= '</table>';
 
+		$headers  = 'MIME-Version: 1.0' . "\r\n";
+		$headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+		$headers .= 'From: Paype automailer <paype@paype.com>' . "\r\n";
+
 		foreach($this->emails as $mail)
 		{
-			mail($mail, 'New Paype users', $email);
+			mail($mail, 'New Paype users', $email, $headers);
 		}
 	}
 }
