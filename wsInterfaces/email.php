@@ -33,6 +33,7 @@ class Email implements WsInterface
 					<th>Gender</th>
 					<th>Birthday</th>
 					<th>Customer ID</th>
+					<th>Customer since</th>
 				</tr>';
 
 		foreach($customers as $c)
@@ -44,6 +45,7 @@ class Email implements WsInterface
 					<td>'.$c->gender.'</td>
 					<td>'.$c->birthday.'</td>
 					<td>'.$c->customer_id.'</td>
+					<td>'.$c->customer_since.'</td>
 				</tr>';
 		}
 
