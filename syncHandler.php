@@ -71,8 +71,10 @@ Class SyncHandler
     {
         paypeLog('customersPush');
 
+        $lastCustomerId = !empty($this->sync->last_customer_push_id) ? $this->sync->last_customer_push_id : '';
+
         // get customers added to your system after last synced customer (by id last_customer_push_id)
-        $customers = $this->wsClient->getCustomers($this->sync->last_customer_push_id);
+        $customers = $this->wsClient->getCustomers($lastCustomerId);
 
         foreach($customers as $customer)
         {

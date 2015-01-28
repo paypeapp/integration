@@ -166,7 +166,18 @@ class Navision implements WsInterface
     {
         $returnCustomers = array();
 
-        $read = array('filter' => null, 'bookmarkKey' => null, 'setSize' => null);
+        $read = array(
+            'filter' => array(
+                array('Field'=>'Paype_ID', 'Criteria'=>'') // only ask ones with empty Paype ID - not synced yet
+            ),
+            'bookmarkKey' => null,
+            'setSize' => 1000
+        );
+
+        if(!empty($lastSyncCustomerId))
+        {
+            $read['filter'][] = array('Field'=>'No', 'Criteria'=>$lastSyncCustomerId . '..'); // start from last synced ID
+        }
 
         try
         {
@@ -177,29 +188,30 @@ class Navision implements WsInterface
             paypeLog('navision customersPush customer read fail: ' . $e->getMessage(), true);
         }
 
-        $customers = $customers->ReadMultiple_Result->RegularCustomer;
+        if(empty($customers->ReadMultiple_Result->RegularCustomer))
+        {
+            $customers = array();
+        }
+        else
+        {
+            $customers = $customers->ReadMultiple_Result->RegularCustomer;
+        }
+
         if(!is_array($customers))
         {
             $customers = array($customers);
         }
 
-        // if sync id is not presented try to add all customers
-        $addCustomer = empty($lastSyncCustomerId);
-
         foreach($customers as $customer)
         {
-            if($addCustomer && !empty($customer->No))
+            if(!empty($customer->No))
             {
                 $returnCustomers[] = array(
-                    'first_name' => $customer->First_Name,
-                    'last_name' => $customer->Last_Name,
+                    'first_name' => (!empty($customer->First_Name) ? $customer->First_Name : ''),
+                    'last_name' => (!empty($customer->Last_Name) ? $customer->Last_Name : ''),
                     'email' => $customer->E_Mail,
                     'customer_id' => $customer->No
                 );
-            }
-            else if($lastSyncCustomerId == $customer->No)
-            {
-                $addCustomer = true;
             }
         }
 
