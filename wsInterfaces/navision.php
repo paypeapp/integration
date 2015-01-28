@@ -222,8 +222,40 @@ class Navision implements WsInterface
             }
             catch(Exception $e)
             {
-                paypeLog('navision customerPull create fail: ' . $e->getMessage(), true);
+                preg_match('/Same e-mail has already used in Regular Customer (PK[0-9]{6})/', $e->getMessage(), $navId);
+
+                if(count($navId) == 2)
+                {
+                    // The error message contains RegularCustomer->No, call update on it
+                    $navNo = $navId[1];
+                    $this->updateCustomer($create, $navNo);
+                }
+                else
+                {
+                    paypeLog('navision customerPull create fail: ' . $e->getMessage(), true);
+                }
             }
+        }
+    }
+
+    private function updateCustomer($customer, $navNo)
+    {
+        try
+        {
+            $read = array();
+            $read['No'] = $navNo;
+
+            // get customer key by their NAV No from create error message
+            $navClient = $this->client->Read($read);
+
+            // update customer sending in create object with key received from read call
+            $customer['RegularCustomer']['Key'] = $navClient->RegularCustomer->Key;
+            $update = $this->client->Update($customer);
+            paypeLog('navision customerPull customer update: ' . json_encode($update));
+        }
+        catch(Exception $e)
+        {
+            paypeLog('navision customerPull update fail: ' . $e->getMessage(), true);
         }
     }
 }
