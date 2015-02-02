@@ -59,6 +59,18 @@ class PaypePublicApi
         return $this->curl($customerUpdateFields, 'PUT');
     }
 
+    public function deleteCustomer($uuid)
+    {
+        $this->endpoint = 'customers/'. $uuid;
+        return $this->curl(null, 'DELETE');
+    }
+
+    public function messageCustomer($uuid, $message)
+    {
+        $this->endpoint = 'customers/'. $uuid . '/messages';
+        return $this->curl(array('message'=>$message), 'POST');
+    }
+
     public function getSync()
     {
         $this->endpoint = 'sync';
@@ -112,21 +124,36 @@ class PaypePublicApi
         else
         {
             curl_setopt($rest, CURLOPT_URL, $this->getUrl($params));
+            curl_setopt($rest, CURLOPT_CUSTOMREQUEST, $method);
         }
         curl_setopt($rest, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($rest, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($rest, CURLOPT_RETURNTRANSFER, true);
-        $response = curl_exec($rest);
+        $response = curl_exec($rest); // JSON result
 
         curl_close($rest);
-        paypeLog('rest-api-response ' . $method . ' ' . json_encode($params) . ': ' . json_encode($response));
+        paypeLog('rest-api-response ' . $method . ' ' . json_encode($params) . ': ' . $response);
+
+        $response = json_decode($response);
 
         if(!empty($response->error))
         {
-            throw new Exception($response->error->message);
+            preg_match('/Unauthorized. Increase nonce. Try (\d+)/', $response->error->message, $expectedNonce);
+
+            if(count($expectedNonce) == 2)
+            {
+                // nonce automatic increase, rest call retry
+                paypeLog('increase nonce, try again');
+                $this->nonce = $expectedNonce[1];
+                return $this->curl($params, $method);
+            }
+            else
+            {
+                throw new Exception($response->error->message);
+            }
         }
 
-        return json_decode($response);
+        return $response;
     }
 
     public function setEndpoint($e)

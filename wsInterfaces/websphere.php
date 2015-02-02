@@ -56,21 +56,24 @@ class Websphere implements WsInterface
 
 	public function postCustomers($customers)
 	{
-
 		foreach($customers as $c)
 		{
+			$sendCustomerToWebsphere = false;
+
 			$cardInfo = new CustomerCardInfo();
 			$cardInfo->email = $c->email;
 			$cardInfo->firstName = $c->first_name;
 			$cardInfo->lastName = $c->last_name;
 			$cardInfo->language = $c->language;
-			if(strlen($c->customer_id) == 16)
+			if(preg_match("'^\d{16}$'", $c->customer_id))
 			{
 				$cardInfo->cardNo = $c->customer_id;
+				$sendCustomerToWebsphere = true;
 			}
-			else
+			elseif(Library::validateEstonianPersonalCode($c->customer_id))
 			{
 				$cardInfo->idCode = $c->customer_id;
+				$sendCustomerToWebsphere = true;
 			}
 			$cardInfo->phone = $c->phone_international;
 			$cardInfo->birthDate = !empty($c->birthday) ? date('Y-m-d', strtotime($c->birthday)) : null;
@@ -81,14 +84,23 @@ class Websphere implements WsInterface
 
 			try
 			{
-				$res = $this->client->__soapCall('postCustomerCardInfo', array($post));
+				if($sendCustomerToWebsphere)
+				{
+					$res = $this->client->__soapCall('postCustomerCardInfo', array($post));
 
-				paypeLog('websphere customerPull create res: ' . json_encode($res));
+					paypeLog('websphere customerPull create res: ' . json_encode($res));
+				}
 
 				// if customer post was a success and we got new card number we can send it back to API and activate the customer card
-				if(strlen($res->return->cardNo) == 16)
+				if($sendCustomerToWebsphere && !empty($res->return) && strlen($res->return->cardNo) == 16)
 				{
 					$this->api->updateCustomer($c->token, array('customer_id' => $res->return->cardNo, 'active' => true));
+				}
+				else
+				{
+					// send customer a message and then delete them
+					$this->api->messageCustomer($c->token, 'Test');
+					$this->api->deleteCustomer($c->token);
 				}
 			}
 			catch(Exception $e)
