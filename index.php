@@ -25,5 +25,6 @@ function paypeLog($msg, $alwaysLog = false)
 require_once('paypePublicApi.php');
 require_once('syncHandler.php');
 require_once('wsInterfaces/wsInterface.php');
+require_once('library.php');
 
 new SyncHandler(require('config.php'));
