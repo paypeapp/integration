@@ -53,10 +53,23 @@ Class SyncHandler
                 }
             }
 
+            if(!empty($_GET['sync']))
+            {
+                // particular sync method is forced, do not call methods in config
+                $config['sync'] = array($_GET['sync']);
+            }
+
             foreach($config['sync'] as $func)
             {
                 // call all synchronization methods defined in config
-                $this->$func();
+                if(method_exists($this, $func))
+                {
+                    $this->$func();
+                }
+                else
+                {
+                    paypeLog('failed to find sync method: ' . $func, true);
+                }
             }
         }
         else

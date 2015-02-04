@@ -12,13 +12,17 @@ The script can run as command-line tool or as a website served over your preferr
 
 Recommended to call via time-based job scheduling services such as CRON.
 
-Script has 2 parameters, verbose and force. Verbose will help you see scripts progress, helping you identify any possible problems. Force will make the script synchronize all data and skip using the default sync flags kept in Paype systems.
+Script has 3 parameters: verbose, sync and force.
+- Verbose will help you see scripts progress, helping you identify any possible problems.
+- Sync will overwrite configured synchronization methods to call only one method specified in sync.
+- Force will make the script synchronize all data and skip using the default sync flags kept in Paype systems.
+
 
 CLI example:
-> php index.php verbose=1 force=1
+> php index.php verbose=1 force=1 sync=customersPull
 
 Web example:
-> http://< YOUR LOCAL OR PUBLIC ADDRESS >/< SCRIPT LOCATION >/index.php?verbose=1&force=1
+> http://< YOUR LOCAL OR PUBLIC ADDRESS >/< SCRIPT LOCATION >/index.php?verbose=1&force=1&sync=customersPull
 
 Integration steps
 -----------------
