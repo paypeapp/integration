@@ -83,6 +83,7 @@ class PaypePublicApi
         $url = $this->location . '/' . $this->endpoint . '?';
 
         $this->nonce++;
+        $this->nonce = number_format($this->nonce, 0, '', '');
         $signature = hash('sha256', $this->nonce.$this->key.$this->secret);
 
         $params = array(

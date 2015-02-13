@@ -42,7 +42,7 @@ class Navision2 extends Navision
         }
     }
 
-    private function updateCustomer($customer, $navNo)
+    protected function updateCustomer($customer, $navNo)
     {
         try
         {
