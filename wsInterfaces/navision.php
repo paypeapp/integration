@@ -150,7 +150,7 @@ class NTLMSoapClient extends SoapClient {
 
 class Navision implements WsInterface
 {
-    private $client;
+    protected $client;
 
     public function __construct($wsConfig, $paypeApi)
     {
@@ -250,7 +250,7 @@ class Navision implements WsInterface
         }
     }
 
-    private function updateCustomer($customer, $navNo)
+    protected function updateCustomer($customer, $navNo)
     {
         try
         {
