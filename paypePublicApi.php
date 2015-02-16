@@ -14,6 +14,13 @@ class PaypePublicApi
 
     public function __construct($config)
     {
+        if(!extension_loaded('curl'))
+        {
+            $errMsg = 'curl extension not added';
+            paypeLog($errMsg, true);
+            die('');
+        }
+
         if(empty($config['api']['location']) || empty($config['api']['key']) || empty($config['api']['secret']))
         {
             $errMsg = 'api credentials not set in config';
@@ -128,7 +135,7 @@ class PaypePublicApi
             curl_setopt($rest, CURLOPT_CUSTOMREQUEST, $method);
         }
         curl_setopt($rest, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($rest, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($rest, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($rest, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($rest); // JSON result
 
