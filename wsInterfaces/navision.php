@@ -1,4 +1,5 @@
 <?php
+// http://blogs.msdn.com/b/freddyk/archive/2010/01/19/connecting-to-nav-web-services-from-php.aspx
 
 class NTLMStream
 {
