@@ -22,6 +22,8 @@ function paypeLog($msg, $alwaysLog = false)
     }
 }
 
+date_default_timezone_set('UTC');
+
 require_once('paypePublicApi.php');
 require_once('syncHandler.php');
 require_once('wsInterfaces/wsInterface.php');

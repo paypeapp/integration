@@ -1,4 +1,5 @@
 <?php
+// mac os x: http://voyte.ch/getting-php-in-homebrew-to-access-mssql-via/
 class Mssql implements WsInterface
 {
 	private $db;
@@ -12,12 +13,9 @@ class Mssql implements WsInterface
 			die('');
 		}
 
-		$this->db = mssql_connect($wsConfig['location'], $wsConfig['user'], $wsConfig['pwd'])
-			or die("Couldn't connect to SQL Server on ". $wsConfig['location']);
+		$this->db = mssql_connect($wsConfig['location'], $wsConfig['user'], $wsConfig['pwd']);
 
-
-		mssql_select_db($wsConfig['db'], $this->db)
-			or die("Couldn't open database " . $wsConfig['db']);
+		mssql_select_db($wsConfig['db'], $this->db);
 	}
 
 	public function getCustomers($lastSyncCustomerId)
@@ -31,44 +29,75 @@ class Mssql implements WsInterface
 	{
 		foreach($customers as $c)
 		{
-			$empty = null;
-			$result = null;
+			// try creating the customer
+			$result = $this->createOrUpdateCustomer($c);
 
-			$sql = mssql_init('web_updateClientInfo2');
-			mssql_bind($sql, '@ClientCardID', $c->customer_id, SQLINT4); // TODO: check the field type
-			mssql_bind($sql, '@FirstName', $c->first_name, SQLVARCHAR);
-			mssql_bind($sql, '@LastName', $c->last_name, SQLVARCHAR);
-			mssql_bind($sql, '@Mail', $c->email, SQLVARCHAR);
-			mssql_bind($sql, '@Language', $c->language, SQLVARCHAR);
-			mssql_bind($sql, '@Phone', $c->phone_international, SQLVARCHAR);
-			mssql_bind($sql, '@BirthDate', $c->birthday, SQLVARCHAR);
-			mssql_bind($sql, '@IdentificationCode', $c->customer_id, SQLVARCHAR);
-			$sex = 0;
-			if(!empty($c->gender))
+			if($result != 0)
 			{
-				$sex = ($c->gender == 'male')?1:2;
+				// TODO: client exists, get their id and update
 			}
-			mssql_bind($sql, '@Sex', $sex, SQLINT1);
-
-			$emptyParams = array('Town', 'Borough', 'ZIP', 'ImageURL', 'Address');
-			foreach($emptyParams as $e)
-			{
-				mssql_bind($sql, '@'.$e, $empty, SQLVARCHAR, false, true);
-			}
-
-			$emptyOutputParams = array('MessageDlg', 'card', 'info', 'info2', 'info3', 'WelcomeText', 'Title');
-			foreach($emptyOutputParams as $e)
-			{
-				mssql_bind($sql, '@'.$e, $empty, SQLVARCHAR, true, true);
-			}
-			mssql_bind($sql, '@Result', $result, SQLINT1, true, true);
-
-			mssql_execute($sql);
-
-			// paypeLog('debug: mssql update result ' . $result);
-			// TODO: non-0 result needs logging and action
-
-			mssql_free_statement($sql);
 		}
+	}
+
+	private function createOrUpdateCustomer($customer, $id=null)
+	{
+		$empty = null;
+		$result = null;
+
+		$sql = mssql_init('web_updateClientInfo2');
+		
+		if(empty($id))
+		{	
+			// create user	
+			mssql_bind($sql, '@ClientCardID', $id, SQLINT4, true, true);
+		}
+		else
+		{
+			// update user
+			mssql_bind($sql, '@ClientCardID', $id, SQLINT4);
+		}
+		mssql_bind($sql, '@FirstName', $customer->first_name, SQLVARCHAR);
+		mssql_bind($sql, '@LastName', $customer->last_name, SQLVARCHAR);
+		mssql_bind($sql, '@Mail', $customer->email, SQLVARCHAR);
+		mssql_bind($sql, '@Language', $customer->language, SQLVARCHAR);
+		mssql_bind($sql, '@Phone', $customer->phone_international, SQLVARCHAR);
+		mssql_bind($sql, '@card', $customer->customer_id, SQLVARCHAR);
+		
+		$sex = 0;
+		if(!empty($customer->gender))
+		{
+			$sex = ($customer->gender == 'male') ? 1 : 2;
+		}
+		mssql_bind($sql, '@Sex', $sex, SQLINT1);
+
+		if(empty($customer->birthday))
+		{
+			mssql_bind($sql, '@BirthDate', $customer->birthday, SQLVARCHAR, false, true);
+		}
+		else
+		{
+			$customer->birthday = date('Y-m-d 00:00:00', strtotime($customer->birthday));
+			mssql_bind($sql, '@BirthDate', $customer->birthday, SQLVARCHAR);
+		}
+
+		$emptyParams = array('Town', 'Borough', 'ZIP', 'ImageURL', 'Address');
+		foreach($emptyParams as $e)
+		{
+			mssql_bind($sql, '@'.$e, $empty, SQLVARCHAR, false, true);
+		}
+
+		$emptyOutputParams = array('MessageDlg', 'IdentificationCode', 'info', 'info2', 'info3', 'WelcomeText', 'Title');
+		foreach($emptyOutputParams as $e)
+		{
+			mssql_bind($sql, '@'.$e, $empty, SQLVARCHAR, true, true);
+		}
+
+		mssql_bind($sql, '@Result', $result, SQLINT1, true, true);
+
+		mssql_execute($sql);
+
+		mssql_free_statement($sql);
+
+		return $result;
 	}
 }
