@@ -34,7 +34,13 @@ class Mssql implements WsInterface
 
 			if($result != 0)
 			{
-				// TODO: client exists, get their id and update
+				$result = $this->createOrUpdateCustomer($c, $this->getCustomerRowId($c->customer_id));
+			}
+
+			if($result != 0)
+			{
+				paypeLog('customer not added, update failed errorCode=' . $result . ' name=' . $c->first_name . ' ' . $c->last_name .
+					' (id=' . $c->customer_id . ')', true);
 			}
 		}
 	}
@@ -99,5 +105,20 @@ class Mssql implements WsInterface
 		mssql_free_statement($sql);
 
 		return $result;
+	}
+
+	// get customer SQL RowID by their Paype customer id
+	private function getCustomerRowId($customerId)
+	{
+		$query = mssql_query('select RowID as id from Clientcard where card="' . $customerId . '"');
+		$result = mssql_fetch_object($query);
+
+		if(empty($result->id))
+		{
+			paypeLog('can not find customer in mssql to update', true);
+			return 0;
+		}
+
+		return $result->id;
 	}
 }
