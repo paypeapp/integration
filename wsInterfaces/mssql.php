@@ -34,7 +34,7 @@ class Mssql implements WsInterface
 
 			if($result != 0)
 			{
-				$result = $this->createOrUpdateCustomer($c, $this->getCustomerRowId($c->customer_id));
+				$result = $this->createOrUpdateCustomer($c, $this->getCustomerRowId($c));
 			}
 
 			if($result != 0)
@@ -108,14 +108,15 @@ class Mssql implements WsInterface
 	}
 
 	// get customer SQL RowID by their Paype customer id
-	private function getCustomerRowId($customerId)
+	private function getCustomerRowId($customer)
 	{
-		$query = mssql_query('select RowID as id from Clientcard where card="' . $customerId . '"');
+		// first by Paype customer_id then email to get cases where customer_id was updated
+		$query = mssql_query('select RowID as id from Clientcard where card="' . $customer->customer_id . '" or Mail="' . $customer->email . '"');
 		$result = mssql_fetch_object($query);
 
 		if(empty($result->id))
 		{
-			paypeLog('can not find customer in mssql to update', true);
+			paypeLog('can not find customer in mssql to update');
 			return 0;
 		}
 
