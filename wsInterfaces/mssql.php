@@ -51,7 +51,7 @@ class Mssql implements WsInterface
 		$result = null;
 
 		$sql = mssql_init('web_updateClientInfo2');
-		
+
 		if(empty($id))
 		{	
 			// create user	
