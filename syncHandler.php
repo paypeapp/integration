@@ -45,6 +45,11 @@ Class SyncHandler
                 {
                     // unless force-d to sync all, get synchronization flags from Paype
                     $this->sync = $this->api->getSync();
+					if(empty($this->sync))
+					{
+						paypeLog('Failed to get sync flags', true);
+						die('');
+					}
                 }
                 catch(Exception $e)
                 {
