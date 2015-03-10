@@ -47,8 +47,7 @@ Class SyncHandler
                     $this->sync = $this->api->getSync();
 					if(empty($this->sync))
 					{
-						paypeLog('Failed to get sync flags', true);
-						die('');
+						throw new Exception('Failed to get sync flags');
 					}
                 }
                 catch(Exception $e)
