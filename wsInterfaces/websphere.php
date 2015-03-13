@@ -96,8 +96,10 @@ class Websphere implements WsInterface
 				{
 					$this->api->updateCustomer($c->token, array('customer_id' => $res->return->cardNo, 'active' => true));
 				}
-				else
+				else if(empty($res->return->statusCode) || in_array($res->return->statusCode, array(2, 4)))
 				{
+					// rest of statusCodes will leave the customer inactive
+					// INVALID_INPUT_DATA or NO_MATCHES_FOUND will
 					// send customer a message and then delete them
 					$this->api->messageCustomer($c->token, 'Test');
 					$this->api->deleteCustomer($c->token);
