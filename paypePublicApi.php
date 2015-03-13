@@ -54,6 +54,12 @@ class PaypePublicApi
         return $customers;
     }
 
+	public function getCustomer($uuid)
+	{
+		$this->endpoint = 'customers/'. $uuid;
+		return $this->curl();
+	}
+
     public function postCustomer($customer)
     {
         $this->endpoint = 'customers';
