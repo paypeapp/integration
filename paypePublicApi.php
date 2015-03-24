@@ -5,6 +5,7 @@
  */
 class PaypePublicApi
 {
+	public $sync; // obj keys: last_customer_push_id, last_customer_pull_time
     private $location;
     private $key;
     private $secret;
@@ -87,7 +88,9 @@ class PaypePublicApi
     public function getSync()
     {
         $this->endpoint = 'sync';
-        return $this->curl();
+		$this->sync = $this->curl();
+
+        return $this->sync;
     }
 
     // build call url with parameters, key, nonce and auth signature

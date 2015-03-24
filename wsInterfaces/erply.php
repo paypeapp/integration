@@ -111,6 +111,8 @@ class EAPI
 class Erply implements WsInterface
 {
 	private $client;
+	private $customerGroups;
+	private $paypeApi;
 
 	public function __construct($wsConfig, $paypeApi)
 	{
@@ -120,22 +122,32 @@ class Erply implements WsInterface
 		$this->client->username = $wsConfig['user'];
 		$this->client->password = $wsConfig['pwd'];
 		$this->client->url = 'https://' . $wsConfig['clientCode'] . '.erply.com/api/';
+
+		$this->paypeApi = $paypeApi;
 	}
 
-	public function getCustomers($lastSyncCustomerId)
+	public function getCustomers($lastSyncTimestamp, $customers=array(), $pageNo = 1)
 	{
-		$returnCustomers = array();
+		$returnCustomers = $customers;
+
+		$getParams = array();
+		$getParams['recordsOnPage'] = 100;
+		$getParams['pageNo'] = $pageNo;
+		if(!empty($this->paypeApi->sync->last_customer_pull_time))
+		{
+			// using pull timestamp - last sync time in unix ts
+			$getParams['changedSince'] = $this->paypeApi->sync->last_customer_pull_time;
+		}
 
 		try
 		{
-			$result = $this->client->sendRequest("getCustomers", array());
+			$result = $this->client->sendRequest("getCustomers", $getParams);
 
 			$res = json_decode($result);
 			if($res->status->responseStatus != 'ok')
 			{
 				throw new Exception($result); //json of response
 			}
-			//paypeLog('erply debug: ' . $result);
 		}
 		catch(Exception $e)
 		{
@@ -151,7 +163,8 @@ class Erply implements WsInterface
 					'first_name' => $customer->firstName,
 					'last_name' => $customer->lastName,
 					'email' => $customer->email,
-					'customer_id' => $customer->customerID
+					'customer_id' => $customer->customerID,
+					'status' => $customer->groupName
 				);
 
 				if(!empty($customer->gender))
@@ -173,6 +186,11 @@ class Erply implements WsInterface
 			}
 		}
 
+		if($res->status->recordsInResponse == 100)
+		{
+			return $this->getCustomers($lastSyncCustomerId, $returnCustomers, $pageNo+1);
+		}
+
 		return $returnCustomers;
 	}
 
@@ -181,12 +199,22 @@ class Erply implements WsInterface
 		foreach($customers as $c)
 		{
 			$create = array();
-			$create['customerID'] = $c->customer_id;
+			if(Library::validateEstonianPersonalCode($c->customer_id))
+			{
+				// if its estonian personal code new customer created in Erply and we send personal code
+				$create['code'] = $c->customer_id;
+			}
+			else
+			{
+				// customer exists and their Erply and Paype ID should match, this is update in Erply saveCustomer
+				$create['customerID'] = $c->customer_id;
+			}
 			$create['email'] = $c->email;
 			$create['firstName'] = $c->first_name;
 			$create['lastName'] = $c->last_name;
 			$create['gender'] = $c->gender;
 			$create['phone'] = $c->phone_international;
+			$create['groupID'] = $this->getCustomerGroupId($c->status);
 			if(!empty($c->birthday))
 			{
 				$create['birthday'] = date("Y-m-d", strtotime($c->birthday));
@@ -201,12 +229,88 @@ class Erply implements WsInterface
 				{
 					throw new Exception($result); //json of response
 				}
-				//paypeLog('erply debug: ' . $result);
+				paypeLog('erply postCustomers debug: ' . $result . ' create :' .  json_encode($create));
+
+				if(!empty($res->records[0]->customerID) && $res->records[0]->alreadyExists == 0)
+				{
+					// newly created customer returns Erply ID, save this in Paype as customer ID
+					$this->paypeApi->updateCustomer($c->token, array('customer_id' => $res->records[0]->customerID, 'active' => true));
+				}
 			}
 			catch(Exception $e)
 			{
 				paypeLog('erply customerPull create fail: ' . $e->getMessage() . ' for ' . json_encode($create), true);
 			}
 		}
+	}
+
+	private function getCustomerGroups()
+	{
+		if(empty($this->customerGroups))
+		{
+			try
+			{
+				$result = $this->client->sendRequest("getCustomerGroups", array());
+
+				$res = json_decode($result);
+				if($res->status->responseStatus != 'ok')
+				{
+					throw new Exception($result); //json of response
+				}
+			}
+			catch(Exception $e)
+			{
+				paypeLog('erply customerPush getCustomerGroups fail: ' . $e->getMessage(), true);
+			}
+
+			$this->customerGroups = $res->records;
+		}
+
+		return $this->customerGroups;
+	}
+
+	private function getCustomerGroupId($groupName)
+	{
+		foreach($this->getCustomerGroups() as $group)
+		{
+			if($group->name == $groupName)
+			{
+				return $group->customerGroupID;
+			}
+		}
+
+		// none was found
+		return $this->createCustomerGroup($groupName);
+	}
+
+	private function createCustomerGroup($groupName)
+	{
+		$returnId = null;
+
+		$create = array();
+		$create['name'] = $groupName;
+
+		try
+		{
+			$result = $this->client->sendRequest("saveCustomerGroup", $create);
+
+			$res = json_decode($result);
+			if($res->status->responseStatus != 'ok')
+			{
+				throw new Exception($result); //json of response
+			}
+			paypeLog('erply debug createCustomerGroup: ' . $result);
+
+			if(!empty($res->records[0]->customerGroupID))
+			{
+				$returnId = $res->records[0]->customerGroupID;
+			}
+		}
+		catch(Exception $e)
+		{
+			paypeLog('erply customerPull saveCustomerGroup fail: ' . $e->getMessage() . ' for ' . json_encode($create), true);
+		}
+
+		return $returnId;
 	}
 }
