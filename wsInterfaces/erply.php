@@ -204,7 +204,7 @@ class Erply implements WsInterface
 				// if its estonian personal code new customer created in Erply and we send personal code
 				$create['code'] = $c->customer_id;
 			}
-			else
+			elseif($c->customer_id[0] != 'P') // if the customer ID has P prefix its a new customer without personal code and save should be called without customerID
 			{
 				// customer exists and their Erply and Paype ID should match, this is update in Erply saveCustomer
 				$create['customerID'] = $c->customer_id;
