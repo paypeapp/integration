@@ -102,7 +102,7 @@ Class SyncHandler
             }
             catch(Exception $e)
             {
-                paypeLog('customersPush customer api post failed: ' . $e->getMessage(), true);
+                paypeLog('customersPush customer api post failed: ' . $e->getMessage() . ' customer: ' . json_encode($customer), true);
             }
         }
     }
@@ -124,7 +124,8 @@ Class SyncHandler
         {
             // get customers from Paype, use created_within time in seconds to only get customers added after last sync
             // unless force param is used
-            $customers = $this->api->getCustomers($currentTime - $lastSyncTime);
+            $createdWithin = $currentTime - $lastSyncTime + 1;
+            $customers = $this->api->getCustomers($createdWithin);
         }
         catch(Exception $e)
         {
