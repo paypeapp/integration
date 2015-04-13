@@ -27,6 +27,7 @@ class Mssql implements WsInterface
 
 	public function postCustomers($customers)
 	{
+		//$this->getAllCustomersForDebug();
 		foreach($customers as $c)
 		{
 			// try creating the customer
@@ -53,12 +54,14 @@ class Mssql implements WsInterface
 		$sql = mssql_init('web_updateClientInfo2');
 
 		if(empty($id))
-		{	
+		{
+			// paypeLog('create');
 			// create user	
 			mssql_bind($sql, '@ClientCardID', $id, SQLINT4, true, true);
 		}
 		else
 		{
+			// paypeLog('update');
 			// update user
 			mssql_bind($sql, '@ClientCardID', $id, SQLINT4);
 		}
@@ -68,7 +71,7 @@ class Mssql implements WsInterface
 		mssql_bind($sql, '@Language', $customer->language, SQLVARCHAR);
 		mssql_bind($sql, '@Phone', $customer->phone_international, SQLVARCHAR);
 		mssql_bind($sql, '@card', $customer->customer_id, SQLVARCHAR);
-		
+
 		$sex = 0;
 		if(!empty($customer->gender))
 		{
@@ -98,11 +101,13 @@ class Mssql implements WsInterface
 			mssql_bind($sql, '@'.$e, $empty, SQLVARCHAR, true, true);
 		}
 
-		mssql_bind($sql, '@Result', $result, SQLINT1, true, true);
+		mssql_bind($sql, '@Result', $result, SQLINT4, true, true);
 
 		mssql_execute($sql);
 
 		mssql_free_statement($sql);
+
+		// paypeLog('debug web_updateClientInfo2 '.$result . ' > ' . json_encode($customer));
 
 		return $result;
 	}
@@ -121,5 +126,14 @@ class Mssql implements WsInterface
 		}
 
 		return $result->id;
+	}
+
+	private function getAllCustomersForDebug()
+	{
+		$query = mssql_query('select RowID, FirstName, LastName from Clientcard');
+		while($result = mssql_fetch_object($query))
+		{
+			paypeLog('debug get > ' . json_encode($result));
+		}
 	}
 }
