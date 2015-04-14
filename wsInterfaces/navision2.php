@@ -67,7 +67,10 @@ class Navision2 extends Navision
 			$create = array();
 			$create['_Email'] = $c->email;
 			$create['_Name'] = $c->first_name . ' ' . $c->last_name;
+			$create['_Phone'] = $c->phone_international;
 			$create['customerID'] = $c->customer_id;
+			$create['_CustomerNo'] = '';
+			$create['_UpdateDiscount'] = $c->identification_count > 0;
 
 			try
 			{
@@ -79,5 +82,4 @@ class Navision2 extends Navision
 				paypeLog('navision customerPull create fail: ' . $e->getMessage(), true);
 			}
 		}
-	}
 }
