@@ -28,6 +28,7 @@ class Mssql implements WsInterface
 	public function postCustomers($customers)
 	{
 		//$this->getAllCustomersForDebug();
+
 		foreach($customers as $c)
 		{
 			// try creating the customer
@@ -40,8 +41,11 @@ class Mssql implements WsInterface
 
 			if($result != 0)
 			{
-				paypeLog('customer not added, update failed errorCode=' . $result . ' name=' . $c->first_name . ' ' . $c->last_name .
-					' (id=' . $c->customer_id . ')', true);
+				paypeLog('customer not added, update failed errorCode=' . $result . ' customer=' . json_encode($c), true);
+			}
+			else
+			{
+				paypeLog('customer add success customer=' . json_encode($c));
 			}
 		}
 	}
@@ -50,6 +54,7 @@ class Mssql implements WsInterface
 	{
 		$empty = null;
 		$result = null;
+		$message = null;
 
 		$sql = mssql_init('web_updateClientInfo2');
 
@@ -69,7 +74,6 @@ class Mssql implements WsInterface
 		mssql_bind($sql, '@LastName', $customer->last_name, SQLVARCHAR);
 		mssql_bind($sql, '@Mail', $customer->email, SQLVARCHAR);
 		mssql_bind($sql, '@Language', $customer->language, SQLVARCHAR);
-		mssql_bind($sql, '@Phone', $customer->phone_international, SQLVARCHAR);
 		mssql_bind($sql, '@card', $customer->customer_id, SQLVARCHAR);
 
 		$sex = 0;
@@ -89,26 +93,31 @@ class Mssql implements WsInterface
 			mssql_bind($sql, '@BirthDate', $customer->birthday, SQLVARCHAR);
 		}
 
+		if(empty($customer->phone_international))
+		{
+			$customer->phone_international = 'puudub';
+		}
+
+		mssql_bind($sql, '@Phone', $customer->phone_international, SQLVARCHAR);
+
 		$emptyParams = array('Town', 'Borough', 'ZIP', 'ImageURL', 'Address');
 		foreach($emptyParams as $e)
 		{
 			mssql_bind($sql, '@'.$e, $empty, SQLVARCHAR, false, true);
 		}
 
-		$emptyOutputParams = array('MessageDlg', 'IdentificationCode', 'info', 'info2', 'info3', 'WelcomeText', 'Title');
+		$emptyOutputParams = array('IdentificationCode', 'info', 'info2', 'info3', 'WelcomeText', 'Title');
 		foreach($emptyOutputParams as $e)
 		{
 			mssql_bind($sql, '@'.$e, $empty, SQLVARCHAR, true, true);
 		}
 
 		mssql_bind($sql, '@Result', $result, SQLINT4, true, true);
+		mssql_bind($sql, '@MessageDlg', $message, SQLVARCHAR, true, true, 128);
 
 		mssql_execute($sql);
 
 		mssql_free_statement($sql);
-
-		// paypeLog('debug web_updateClientInfo2 '.$result . ' > ' . json_encode($customer));
-
 		return $result;
 	}
 
@@ -121,7 +130,7 @@ class Mssql implements WsInterface
 
 		if(empty($result->id))
 		{
-			paypeLog('can not find customer in mssql to update');
+			//paypeLog('can not find customer in mssql to update');
 			return 0;
 		}
 
