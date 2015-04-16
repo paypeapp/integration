@@ -24,6 +24,8 @@ return array(
         'customersPull' // pulling customers added via Paype to your systems
     ),
 
+    'interval' => 60, // sync interval in seconds, optional, if not set paype api held sync is used
+
     'auth' => array(
         'ipWhitelist' => array(
             '127.0.0.1'

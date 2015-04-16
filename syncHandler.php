@@ -5,11 +5,14 @@ Class SyncHandler
     private $wsClient;
     private $api;
     private $sync;
+    private $config;
 
     public function __construct($config)
     {
         paypeLog('start');
         $t1 = time();
+
+        $this->config = $config;
 
         if(!$this->auth($config['auth']))
         {
@@ -17,53 +20,37 @@ Class SyncHandler
             die('Access denied. Try harder, or do not try at all!');
         }
 
-        $this->sync($config);
+        $this->sync();
 
         paypeLog('finished in ' . (time() - $t1) . ' seconds');
     }
 
-    private function sync($config)
+    private function sync()
     {
-        if(!empty($config['webservice']['type']) && file_exists(dirname(__FILE__) . '/wsInterfaces/' . strtolower($config['webservice']['type']) . '.php'))
+        if(!empty($this->config['webservice']['type']) && file_exists(dirname(__FILE__) . '/wsInterfaces/' . strtolower($this->config['webservice']['type']) . '.php'))
         {
-            require_once(dirname(__FILE__) . '/wsInterfaces/' . strtolower($config['webservice']['type']) . '.php');
+            require_once(dirname(__FILE__) . '/wsInterfaces/' . strtolower($this->config['webservice']['type']) . '.php');
 
-            $wsClassName = ucfirst($config['webservice']['type']);
+            $wsClassName = ucfirst($this->config['webservice']['type']);
 
-            $this->api = new PaypePublicApi($config);
-            $this->wsClient = new $wsClassName($config['webservice'], $this->api);
+            $this->api = new PaypePublicApi($this->config);
+            $this->wsClient = new $wsClassName($this->config['webservice'], $this->api);
 
             if(!$this->wsClient instanceof WsInterface)
             {
-                paypeLog('webservice ' . $config['webservice']['type'] . ' has to implement WsInterface', true);
+                paypeLog('webservice ' . $this->config['webservice']['type'] . ' has to implement WsInterface', true);
                 die('');
-            }
-
-            if(empty($_GET['force']))
-            {
-                try
-                {
-                    // unless force-d to sync all, get synchronization flags from Paype
-                    $this->sync = $this->api->getSync();
-					if(empty($this->sync))
-					{
-						throw new Exception('Failed to get sync flags');
-					}
-                }
-                catch(Exception $e)
-                {
-                    paypeLog($e->getMessage(), true);
-                    die('');
-                }
             }
 
             if(!empty($_GET['sync']))
             {
                 // particular sync method is forced, do not call methods in config
-                $config['sync'] = array($_GET['sync']);
+                $this->config['sync'] = array($_GET['sync']);
             }
 
-            foreach($config['sync'] as $func)
+            $this->getSync();
+
+            foreach($this->config['sync'] as $func)
             {
                 // call all synchronization methods defined in config
                 if(method_exists($this, $func))
@@ -78,7 +65,7 @@ Class SyncHandler
         }
         else
         {
-            paypeLog('failed to load webservice: ' . $config['webservice']['type'], true);
+            paypeLog('failed to load webservice: ' . $this->config['webservice']['type'], true);
             die('');
         }
     }
@@ -112,19 +99,21 @@ Class SyncHandler
     {
         paypeLog('customersPull');
 
-        $currentTime = time();
-        $lastSyncTime = 0;
+        $currentTime = $createdWithin = time();
 
-        if(!empty($this->sync->last_customer_pull_time))
+        if(!empty($this->config['interval']))
         {
-            $lastSyncTime = $this->sync->last_customer_pull_time;
+            $createdWithin = $this->config['interval'];
+        }
+        else if(!empty($this->sync->last_customer_pull_time))
+        {
+            $createdWithin = $currentTime - $this->sync->last_customer_pull_time + 1;
         }
 
         try
         {
             // get customers from Paype, use created_within time in seconds to only get customers added after last sync
             // unless force param is used
-            $createdWithin = $currentTime - $lastSyncTime + 1;
             $customers = $this->api->getCustomers($createdWithin);
         }
         catch(Exception $e)
@@ -135,6 +124,28 @@ Class SyncHandler
 
         // post customers to your system
         $this->wsClient->postCustomers($customers);
+    }
+
+    // sync flags held in Paype
+    private function getSync()
+    {
+        if(empty($_GET['force']))
+        {
+            try
+            {
+                // unless force-d to sync all, get synchronization flags from Paype
+                $this->sync = $this->api->getSync();
+                if(empty($this->sync))
+                {
+                    throw new Exception('Failed to get sync flags');
+                }
+            }
+            catch(Exception $e)
+            {
+                paypeLog($e->getMessage(), true);
+                die('');
+            }
+        }
     }
 
     // highly recommended to use authentication methods, especially when serving integration over public web (not recommended)
