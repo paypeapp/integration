@@ -85,6 +85,12 @@ class PaypePublicApi
         return $this->curl(array('message'=>$message), 'POST');
     }
 
+    public function createCustomerMetaData($email, $data)
+    {
+        $this->endpoint = 'customers/0/metadata';
+        return $this->curl(array('email'=>$email, 'meta_data'=>$data), 'POST');
+    }
+
     public function getSync()
     {
         $this->endpoint = 'sync';

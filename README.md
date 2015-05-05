@@ -32,3 +32,20 @@ Integration steps
 4. Decide and/or discuss what synchronization methods to use (customers push and pull, only pull or only push)
 5. Copy config.php-sample to config.php and fill in the blanks with API credentials, your webservice data and sync methods to use
 6. Set up method to run the script according to Usage
+
+Windows installation steps
+--------------------------
+PHP CLI.
+
+1. Get PHP http://windows.php.net/download/
+2. Setup PHP php.ini
+2.1. Enable Curl and SOAP
+2.2. extension_dir = "ext"
+2.2. error_log absolute path
+3. Get Visual studio binaries http://www.microsoft.com/en-us/download/details.aspx?id=30679
+4. Get this project down
+5. Set up config values
+6. Make sync-task.bat 
+	Add absolute paths start of PHP sync:
+	start "" "C:\Users\paype_user\Downloads\php\php.exe" C:\Users\paype_user\Downloads\php\integration-master\index.php verbose=1
+7. Add sync-task.bat path to run every minute in Task Scheduler
