@@ -17,8 +17,6 @@ class Axa implements WsInterface
 
 	public function postCustomers($customers)
 	{
-		/*$axaXml = '<?xml version="1.0" encoding="UTF-8"?><E-Document><Document>';*/
-
 		foreach($customers as $c)
 		{
 			$axaXml = '<?xml version="1.0" encoding="UTF-8"?><E-Document><Document>';
@@ -36,12 +34,12 @@ class Axa implements WsInterface
 				'Address' => array(
 					'Country' => 'Eesti',
 					'CountryCode' => 'EE',
-					'County' => (!empty($address->county)?$address->county:''),
-					'Street' => (!empty($address->street)?$address->street:''),
-					'City' => (!empty($address->city)?$address->city:''),
-					'PostalCode' => (!empty($address->zip)?$address->zip:''),
-					'HouseNo' => (!empty($address->house)?$address->house:''),
-					'ApartmentNo' => (!empty($address->apartment)?$address->apartment:'')
+					'County' => (!empty($address->county)?$address->county:'puudub'),
+					'Street' => (!empty($address->street)?$address->street:'puudub'),
+					'City' => (!empty($address->city)?$address->city:'puudub'),
+					'PostalCode' => (!empty($address->zip)?$address->zip:'0'),
+					'HouseNo' => (!empty($address->house)?$address->house:'0'),
+					'ApartmentNo' => (!empty($address->apartment)?$address->apartment:'0')
 				)
 			);
 
@@ -57,9 +55,15 @@ class Axa implements WsInterface
 
 			$axaXml .= '</Document></E-Document>';
 
-			$response = $this->client->__soapCall('CallXMLAction', array(array('action'=>'createClient_MCC','xml'=>$axaXml)));
-
-			paypeLog('axa res > ' . json_encode($response));
+			try
+			{
+				$response = $this->client->__soapCall('CallXMLAction', array(array('action'=>'createClient_MCC','xml'=>$axaXml)));
+				paypeLog('axa-res-debug > ' . json_encode($response) . ' client > ' . json_encode($axaCustomer));
+			}
+			catch(Exception $e)
+			{
+				paypeLog('axa-error > ' . $e->getMessage() . ' client > ' . json_encode($axaCustomer));
+			}
 		}
 	}
 
