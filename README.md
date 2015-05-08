@@ -37,15 +37,17 @@ Windows installation steps
 --------------------------
 PHP CLI.
 
-1. Get PHP http://windows.php.net/download/
-2. Setup PHP php.ini
-2.1. Enable Curl and SOAP
-2.2. extension_dir = "ext"
-2.2. error_log absolute path
-3. Get Visual studio binaries http://www.microsoft.com/en-us/download/details.aspx?id=30679
-4. Get this project down
-5. Set up config values
-6. Make sync-task.bat 
+1. Get PHP http://windows.php.net/download/ x86
+2. Setup PHP php.ini, copy production and
+  1. Enable Curl and SOAP
+  2. extension_dir = "ext"
+  3. error_log absolute path
+3. Get Visual studio binaries http://www.microsoft.com/en-us/download/details.aspx?id=30679 "Visual C++ Redistributable for Visual Studio 2012 Update 4" x86 for VC11 PHP version 
+4. Test php to work (CMD php -i)
+5. Get this project down
+6. Set up config values (your webservice location and credentials, Paype Public API connection)
+7. Make sync-task.bat 
 	Add absolute paths start of PHP sync:
 	start "" "C:\Users\paype_user\Downloads\php\php.exe" C:\Users\paype_user\Downloads\php\integration-master\index.php verbose=1
-7. Add sync-task.bat path to run every minute in Task Scheduler
+8. Test sync to work, check sync-task to generate logs in error_log and customers to sync
+9. Add sync-task.bat path to run every minute in Task Scheduler
