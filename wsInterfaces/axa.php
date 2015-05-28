@@ -43,8 +43,8 @@ class Axa implements WsInterface
 				)
 			);
 
-			$axaCustomer['AcceptsDataProcessing'] = 'Jah';
-			$axaCustomer['AcceptsSpecialOffers'] = 'Jah';
+			$axaCustomer['AcceptsSpecialOffers'] = ($c->accept_newsletter)?'Jah':'Ei';
+			$axaCustomer['AcceptsDataProcessing'] = !empty($address->accept_data_processing)?'Jah':'Ei';
 			$axaCustomer['PaypeId'] = $c->token;
 			$axaCustomer['CustAccount'] = null;
 			$axaCustomer['VATRegNum'] = null;
@@ -76,7 +76,7 @@ class Axa implements WsInterface
 			{
 				$value = $this->arrayToXml($value);
 			}
-			$xml .= '<'.$key.'>'.$value.'</'.$key.'>';
+			$xml .= '<'.$key.'>'.urldecode($value).'</'.$key.'>';
 		}
 
 		return $xml;

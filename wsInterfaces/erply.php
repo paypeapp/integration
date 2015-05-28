@@ -188,7 +188,7 @@ class Erply implements WsInterface
 
 		if($res->status->recordsInResponse == 100)
 		{
-			return $this->getCustomers($lastSyncCustomerId, $returnCustomers, $pageNo+1);
+			return $this->getCustomers($lastSyncTimestamp, $returnCustomers, $pageNo+1);
 		}
 
 		return $returnCustomers;
