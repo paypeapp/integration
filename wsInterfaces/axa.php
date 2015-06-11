@@ -1,11 +1,12 @@
 <?php
 class Axa implements WsInterface
 {
-	private $client;
+	private $client, $api;
 
 	public function __construct($wsConfig, $paypeApi)
 	{
 		$this->client = new SoapClient($wsConfig['location']);
+		$this->api = $paypeApi;
 	}
 
 	public function getCustomers($lastSyncCustomerId)
@@ -59,6 +60,8 @@ class Axa implements WsInterface
 			{
 				$response = $this->client->__soapCall('CallXMLAction', array(array('action'=>'createClient_MCC','xml'=>$axaXml)));
 				paypeLog('axa-res-debug > ' . json_encode($response) . ' client > ' . json_encode($axaCustomer));
+
+				$this->addTags($address, $c->token);
 			}
 			catch(Exception $e)
 			{
@@ -80,5 +83,20 @@ class Axa implements WsInterface
 		}
 
 		return $xml;
+	}
+
+	// build tags from customer meta_data and push them to paype
+	private function addTags($address, $token)
+	{
+		$tags = array_merge($address->home, $address->interests);
+		if(!empty($address->cottage))
+		{
+			$tags[] = 'suvekodu';
+		}
+
+		foreach($tags as $t)
+		{
+			$this->api->createCustomerTag($token, urldecode($t));
+		}
 	}
 }

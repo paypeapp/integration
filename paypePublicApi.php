@@ -85,6 +85,12 @@ class PaypePublicApi
         return $this->curl(array('message'=>$message), 'POST');
     }
 
+    public function createCustomerTag($uuid, $tag)
+    {
+        $this->endpoint = 'customers/'. $uuid . '/tags';
+        return $this->curl(array('tag'=>$tag), 'POST');
+    }
+
     public function createCustomerMetaData($email, $data)
     {
         $this->endpoint = 'customers/0/metadata';
