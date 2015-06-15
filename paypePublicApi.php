@@ -147,7 +147,6 @@ class PaypePublicApi
             curl_setopt($rest, CURLOPT_URL, $this->getUrl());
             curl_setopt($rest, CURLOPT_POST, 1);
             curl_setopt($rest, CURLOPT_POSTFIELDS, json_encode($params));
-            curl_setopt($rest, CURLOPT_POST, 1);
             curl_setopt($rest, CURLOPT_CUSTOMREQUEST, $method);
         }
         else
