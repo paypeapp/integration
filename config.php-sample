@@ -30,5 +30,7 @@ return array(
         'ipWhitelist' => array(
             '127.0.0.1'
         )
-    )
+    ),
+
+    'error_log' => '' // custom location for error_log on that business
 );

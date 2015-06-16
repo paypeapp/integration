@@ -29,4 +29,10 @@ require_once('syncHandler.php');
 require_once('wsInterfaces/wsInterface.php');
 require_once('library.php');
 
-new SyncHandler(require('config.php'));
+$config = require('config.php');
+if(!empty($config['error_log']))
+{
+    ini_set('error_log', $config['error_log']);
+}
+
+new SyncHandler($config);
