@@ -52,6 +52,19 @@ class Sendsmaily implements WsInterface
 				$create['birthday'] = date("Y-m-d", strtotime($c->birthday));
 			}
 
+			if(!empty($c->meta_data))
+			{
+				try
+				{
+					$metaData = json_decode($c->meta_data);
+					$create['piirkond'] = $metaData->area;
+				}
+				catch(Exception $e)
+				{
+					paypeLog('sendsmaily meta data json decode fail');
+				}
+			}
+
 			paypeLog('sendsmaily customer add: ' . json_encode($create));
 
 			$postMultiple[] = $create;
