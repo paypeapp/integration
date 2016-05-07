@@ -144,14 +144,16 @@ class PaypePublicApi
 
         if($method == 'POST' || $method == 'PUT')
         {
-            curl_setopt($rest, CURLOPT_URL, $this->getUrl());
+            $url = $this->getUrl();
+            curl_setopt($rest, CURLOPT_URL, $url);
             curl_setopt($rest, CURLOPT_POST, 1);
-            curl_setopt($rest, CURLOPT_POSTFIELDS, json_encode($params));
+            curl_setopt($rest, CURLOPT_POSTFIELDS, json_encode($params, JSON_UNESCAPED_UNICODE));
             curl_setopt($rest, CURLOPT_CUSTOMREQUEST, $method);
         }
         else
         {
-            curl_setopt($rest, CURLOPT_URL, $this->getUrl($params));
+            $url = $this->getUrl($params);
+            curl_setopt($rest, CURLOPT_URL, $url);
             curl_setopt($rest, CURLOPT_CUSTOMREQUEST, $method);
         }
         curl_setopt($rest, CURLOPT_HTTPHEADER, $headers);
@@ -160,7 +162,7 @@ class PaypePublicApi
         $response = curl_exec($rest); // JSON result
 
         curl_close($rest);
-        paypeLog('rest-api-response ' . $method . ' ' . json_encode($params) . ': ' . $response);
+        paypeLog('rest-api-response ' . $method . ' ' . $url . ' '. json_encode($params) . ': ' . $response);
 
         $response = json_decode($response);
 
