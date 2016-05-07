@@ -4,10 +4,16 @@ define('ISCLI', PHP_SAPI === 'cli');
 // disable running time limit
 set_time_limit(0);
 
+require_once('paypePublicApi.php');
+require_once('syncHandler.php');
+require_once('wsInterfaces/wsInterface.php');
+require_once('library.php');
+
 if(ISCLI)
 {
     // add command-line parameters to GET parameters array
     parse_str(implode('&', array_slice($argv, 1)), $_GET);
+    $_GET = Library::utf8ize($_GET);
 }
 
 function paypeLog($msg, $alwaysLog = false)
@@ -24,10 +30,6 @@ function paypeLog($msg, $alwaysLog = false)
 
 date_default_timezone_set('UTC');
 
-require_once('paypePublicApi.php');
-require_once('syncHandler.php');
-require_once('wsInterfaces/wsInterface.php');
-require_once('library.php');
 
 $config = require('config.php');
 if(!empty($config['error_log']))
