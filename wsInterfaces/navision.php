@@ -152,6 +152,7 @@ class NTLMSoapClient extends SoapClient {
 class Navision implements WsInterface
 {
     protected $client;
+    protected $api;
 
     public function __construct($wsConfig, $paypeApi)
     {
@@ -161,6 +162,7 @@ class Navision implements WsInterface
         define('USERPWD', $wsConfig['user'].':'.$wsConfig['pwd']);
 
         $this->client = new NTLMSoapClient($wsConfig['location']);
+        $this->api = $paypeApi;
     }
 
     public function getCustomers($lastSyncCustomerId)
