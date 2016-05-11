@@ -85,7 +85,14 @@ Class SyncHandler
             try
             {
                 // send customer data to paype
-                $this->api->postCustomer($customer);
+                if($_GET['update'])
+                {
+                    $this->api->updateCustomer($customer->customer_id, $customer);
+                }
+                else
+                {
+                    $this->api->postCustomer($customer);
+                }
             }
             catch(Exception $e)
             {
