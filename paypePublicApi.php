@@ -97,6 +97,12 @@ class PaypePublicApi
         return $this->curl(array('email'=>$email, 'meta_data'=>$data), 'POST');
     }
 
+    public function createReceipt($data)
+    {
+        $this->endpoint = 'receipts';
+        return $this->curl($data, 'POST');
+    }
+
     public function getSync()
     {
         $this->endpoint = 'sync';

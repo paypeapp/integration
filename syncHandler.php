@@ -133,6 +133,20 @@ Class SyncHandler
         $this->wsClient->postCustomers($customers);
     }
 
+    private function receiptPush()
+    {
+        paypeLog('receiptPush');
+
+        try
+        {
+            $this->api->createReceipt($_GET);
+        }
+        catch(Exception $e)
+        {
+            paypeLog('receiptPush to api post failed: ' . $e->getMessage() . ' data: ' . json_encode($_GET), true);
+        }
+    }
+
     // sync flags held in Paype
     private function getSync()
     {
